@@ -3,7 +3,12 @@ tiles:
   - tile: keys
     name: Monitor
     entity: input_select.monitor_source
-    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power }
+    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false }
+    sizes: [2x2]
+  - tile: keys
+    name: Icons only
+    entity: input_select.monitor_source
+    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false, row_words: false }
     sizes: [2x2]
   - tile: keys
     name: Source

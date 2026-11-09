@@ -31,6 +31,10 @@
     "picture": "Schalter fürs Bild",
     "picture_hint": "Optional, bei einer zwei Reihen hohen Kachel. Ein Schalter, der an ist, solange der Monitor ein Bild zeigt; seine Taste schaltet nur das Bild aus und an.",
     "power": "Schalter für den Strom",
-    "power_hint": "Optional, bei einer zwei Reihen hohen Kachel. Ein Schalter, der an ist, solange der Monitor an ist; seine Taste schaltet den Monitor aus, oder an, wenn er aus ist."
+    "power_hint": "Optional, bei einer zwei Reihen hohen Kachel. Ein Schalter, der an ist, solange der Monitor an ist; seine Taste schaltet den Monitor aus, oder an, wenn er aus ist.",
+    "head": "Kopfzeile",
+    "head_hint": "Name und Zustand des Monitors über den Tasten.",
+    "row_words": "Wörter auf den Monitor-Tasten",
+    "row_words_hint": "Aus: nur die Icons, größer."
   }
 }

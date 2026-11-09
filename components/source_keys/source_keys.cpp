@@ -87,6 +87,8 @@ class KeysTile : public tessera::Tile {
     // The monitor's row: a head line with its state, and keys for the picture and the power under the sources.
     // Only on a tile two rows high, and only when a switch for one of them is chosen.
     monitor_ = c.rows >= 2 && (!picture_.empty() || !power_.empty());
+    head_on_ = c.options["head"] | false;
+    row_words_ = c.options["row_words"] | true;
     // The keys the person listed, as "Value|logo" or "Value"; empty: the select's own options, read in on_state.
     for (JsonVariantConst v : c.options["keys"].as<JsonArrayConst>()) {
       if (count_ >= MAX_KEYS) break;
@@ -216,11 +218,18 @@ class KeysTile : public tessera::Tile {
   void layout() {
     const int gap = ui::px(8);
     if (monitor_) {
-      const int head = ui::line_height(Font::BODY);
+      const int head = head_on_ ? ui::line_height(Font::BODY) + gap : 0;
       row_h_ = std::max(ui::line_height(Font::BODY) * 3 / 2, height_ * 27 / 100);
-      keys_y_ = head + gap;
+      keys_y_ = head;
       keys_h_ = std::max(0, height_ - keys_y_ - gap - row_h_);
       row_y_ = height_ - row_h_;
+      if (head_on_) {
+        lv_obj_remove_flag(head_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_remove_flag(status_, LV_OBJ_FLAG_HIDDEN);
+      } else {
+        lv_obj_add_flag(head_, LV_OBJ_FLAG_HIDDEN);
+        lv_obj_add_flag(status_, LV_OBJ_FLAG_HIDDEN);
+      }
       lv_obj_set_pos(head_, 0, 0);
       lv_obj_set_width(head_, width_ / 2);
       lv_obj_set_pos(status_, width_ / 2, 0);
@@ -346,6 +355,14 @@ class KeysTile : public tessera::Tile {
       ui::set_color(mlabel_[k], accent ? theme::ON_ACCENT : theme::INK_SOFT);
       // The icon and the word together in the middle of the key.
       const int iw = ui::line_height(Font::ICON_SMALL), space = ui::px(8);
+      if (!row_words_) {
+        // Only the icon, large, in the middle of the key.
+        ui::set_font(micon_[k], Font::ICON);
+        lv_obj_add_flag(mlabel_[k], LV_OBJ_FLAG_HIDDEN);
+        const int big = ui::line_height(Font::ICON);
+        lv_obj_set_pos(micon_[k], (kw - big) / 2, (row_h_ - big) / 2);
+        continue;
+      }
       const int tw = std::min(kw - iw - space - 2 * gap, ui::text_width(word, Font::BODY));
       const int x0 = std::max(0, (kw - iw - space - tw) / 2);
       lv_obj_set_pos(micon_[k], x0, (row_h_ - ui::line_height(Font::ICON_SMALL)) / 2);
@@ -359,7 +376,7 @@ class KeysTile : public tessera::Tile {
   int width_ = 0, height_ = 0, count_ = 0, pending_ = -1;
   uint32_t pending_at_ = 0;
   bool listed_ = false, labels_ = true, has_state_ = false;
-  bool monitor_ = false, picture_on_ = false, power_on_ = true;
+  bool monitor_ = false, picture_on_ = false, power_on_ = true, head_on_ = false, row_words_ = true;
   int keys_y_ = 0, keys_h_ = 0, row_y_ = 0, row_h_ = 0;
   tessera::Text name_, picture_, power_;
   lv_obj_t *head_{}, *status_{}, *mblock_[2]{}, *micon_[2]{}, *mlabel_[2]{};

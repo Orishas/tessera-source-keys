@@ -31,6 +31,10 @@
     "picture": "Picture switch",
     "picture_hint": "Optional, on a tile two rows high. A switch that is on while the monitor shows its picture; its key turns only the picture off and on.",
     "power": "Power switch",
-    "power_hint": "Optional, on a tile two rows high. A switch that is on while the monitor is on; its key turns the monitor off, or on while it is off."
+    "power_hint": "Optional, on a tile two rows high. A switch that is on while the monitor is on; its key turns the monitor off, or on while it is off.",
+    "head": "Head line",
+    "head_hint": "The monitor's name and state over the keys.",
+    "row_words": "Words on the monitor's keys",
+    "row_words_hint": "Off: only the icons, larger."
   }
 }
