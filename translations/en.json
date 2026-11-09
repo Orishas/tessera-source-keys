@@ -1,9 +1,19 @@
 {
-  "_meta": { "name": "English" },
+  "_meta": {
+    "name": "English"
+  },
   "screen": {
     "choose_select": "Choose a select",
     "no_options": "No options",
-    "waiting": "Waiting for Home Assistant"
+    "waiting": "Waiting for Home Assistant",
+    "monitor": "Monitor",
+    "status_on": "On",
+    "status_off": "Off",
+    "status_picture_off": "Picture off",
+    "picture_off": "Picture off",
+    "picture_on": "Picture on",
+    "turn_off": "Off",
+    "turn_on": "Turn on"
   },
   "app": {
     "name": "Source keys",
@@ -17,6 +27,10 @@
     "keys": "Keys",
     "keys_hint": "Optional. One key per line as Option|logo, such as PC|windows. Logos: windows, apple, playstation, nintendo-switch, xbox, linux. Empty: every option of the select, with a logo guessed from its name.",
     "labels": "Words under the logos",
-    "labels_hint": "The option's name under each logo."
+    "labels_hint": "The option's name under each logo.",
+    "picture": "Picture switch",
+    "picture_hint": "Optional, on a tile two rows high. A switch that is on while the monitor shows its picture; its key turns only the picture off and on.",
+    "power": "Power switch",
+    "power_hint": "Optional, on a tile two rows high. A switch that is on while the monitor is on; its key turns the monitor off, or on while it is off."
   }
 }

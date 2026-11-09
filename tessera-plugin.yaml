@@ -2,7 +2,7 @@
 # PlayStation, Nintendo Switch, ...). A tap chooses that option, or runs a script with it as a field, so the choice can
 # wake a monitor and switch its input on the way. Every field is explained in docs/MANIFEST.md of tessera-plugins.
 id: source_keys
-version: 0.2.0
+version: 0.3.0
 api: "0.17"
 icon: remote-tv
 maintainer: Orishas
@@ -15,15 +15,15 @@ boards: any
 flash_kb: 45
 
 permissions:
-  home_assistant_actions: [script.turn_on, input_select.select_option, select.select_option]
+  home_assistant_actions: [script.turn_on, input_select.select_option, select.select_option, switch.turn_on, switch.turn_off]
 
 tiles:
   - id: keys
     name: tile_name
     icon: remote-tv
     sizes: { min: 2x1, max: 4x2 }
-    # Up to six keys, each a block, a logo and a label, plus a few members.
-    memory: 1800
+    # Up to six keys (a block, a logo and a label each), the monitor's head line and two keys, plus members.
+    memory: 2600
     domains: [input_select, select]
     attributes: [options]
     example: tile_example
@@ -33,3 +33,5 @@ tiles:
       - { id: field, kind: text, label: field, hint: field_hint, default: quelle }
       - { id: keys, kind: text, multiple: 6, label: keys, hint: keys_hint }
       - { id: labels, kind: toggle, label: labels, hint: labels_hint, default: true }
+      - { id: picture, kind: entity, domains: [switch], label: picture, hint: picture_hint }
+      - { id: power, kind: entity, domains: [switch], label: power, hint: power_hint }

@@ -1,9 +1,19 @@
 {
-  "_meta": { "name": "Deutsch" },
+  "_meta": {
+    "name": "Deutsch"
+  },
   "screen": {
     "choose_select": "Auswahl wählen",
     "no_options": "Keine Optionen",
-    "waiting": "Warte auf Home Assistant"
+    "waiting": "Warte auf Home Assistant",
+    "monitor": "Monitor",
+    "status_on": "An",
+    "status_off": "Aus",
+    "status_picture_off": "Bild aus",
+    "picture_off": "Bild aus",
+    "picture_on": "Bild an",
+    "turn_off": "Aus",
+    "turn_on": "Einschalten"
   },
   "app": {
     "name": "Quellen-Tasten",
@@ -17,6 +27,10 @@
     "keys": "Tasten",
     "keys_hint": "Optional. Eine Taste pro Zeile als Option|Logo, etwa PC|windows. Logos: windows, apple, playstation, nintendo-switch, xbox, linux. Leer: alle Optionen der Auswahl, Logo nach dem Namen geraten.",
     "labels": "Wörter unter den Logos",
-    "labels_hint": "Der Name der Option unter jedem Logo."
+    "labels_hint": "Der Name der Option unter jedem Logo.",
+    "picture": "Schalter fürs Bild",
+    "picture_hint": "Optional, bei einer zwei Reihen hohen Kachel. Ein Schalter, der an ist, solange der Monitor ein Bild zeigt; seine Taste schaltet nur das Bild aus und an.",
+    "power": "Schalter für den Strom",
+    "power_hint": "Optional, bei einer zwei Reihen hohen Kachel. Ein Schalter, der an ist, solange der Monitor an ist; seine Taste schaltet den Monitor aus, oder an, wenn er aus ist."
   }
 }
