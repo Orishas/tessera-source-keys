@@ -1,7 +1,10 @@
 #include "source_keys.h"
+#include "logos.h"
 #include <algorithm>
 #include <cctype>
 #include <cstdio>
+#include <cmath>
+#include <cstring>
 #include <string>
 
 namespace esphome::source_keys {
@@ -9,8 +12,6 @@ namespace esphome::source_keys {
 using tessera::Font;
 namespace ui = tessera::ui;
 
-// Where the logos live: this plugin's own repository, one PNG per logo and look (light and dark).
-static const char *const LOGO_BASE = "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/";
 static constexpr int MAX_KEYS = 6;
 // How long a tapped key stays chosen before Home Assistant has said so, in milliseconds.
 static constexpr uint32_t PENDING_MS = 15000;
@@ -27,6 +28,32 @@ static std::string guess_logo(const std::string &label) {
   if (has("pc") || has("windows")) return "windows";
   if (has("linux")) return "linux";
   return "";
+}
+
+// The mask of a logo by its name (logos.h), or none.
+static const uint8_t *logo_alpha(const char *name) {
+  for (const Logo &l : LOGOS)
+    if (strcmp(l.name, name) == 0) return l.alpha;
+  return nullptr;
+}
+
+// A mask of LOGO_SIZE pixels a side, made `side` pixels a side: each pixel the mean of the source pixels it covers
+// (bilinear when it grows). LVGL then draws it as it is, without a transform of its own.
+static void resample(const uint8_t *src, int side, uint8_t *dst) {
+  for (int y = 0; y < side; ++y)
+    for (int x = 0; x < side; ++x) {
+      const float x0 = float(x) * LOGO_SIZE / side, x1 = float(x + 1) * LOGO_SIZE / side;
+      const float y0 = float(y) * LOGO_SIZE / side, y1 = float(y + 1) * LOGO_SIZE / side;
+      float sum = 0, area = 0;
+      for (int sy = int(y0); sy < int(std::ceil(y1)) && sy < LOGO_SIZE; ++sy)
+        for (int sx = int(x0); sx < int(std::ceil(x1)) && sx < LOGO_SIZE; ++sx) {
+          const float w = (std::min(x1, float(sx + 1)) - std::max(x0, float(sx))) *
+                          (std::min(y1, float(sy + 1)) - std::max(y0, float(sy)));
+          sum += w * src[sy * LOGO_SIZE + sx];
+          area += w;
+        }
+      dst[y * side + x] = area > 0 ? uint8_t(sum / area + 0.5f) : 0;
+    }
 }
 
 // One key: what it chooses, the word under it and the logo over it.
@@ -59,18 +86,19 @@ class KeysTile : public tessera::Tile {
 
     for (int i = 0; i < MAX_KEYS; ++i) {
       block_[i] = ui::block(c.parent, theme::TRACK);
-      place_[i] = ui::pictures() ? ui::picture(c.parent, tessera::Placeholder::NONE) : nullptr;
-      // The word lies in its key's block, so it moves and colours with it.
-      label_[i] = ui::label(block_[i], Font::BODY, theme::MUTED);
       lv_obj_set_style_pad_all(block_[i], 0, 0);
       lv_obj_remove_flag(block_[i], LV_OBJ_FLAG_SCROLLABLE);
+      // The logo and the word lie in their key's block, so they move and colour with it.
+      logo_[i] = lv_image_create(block_[i]);
+      lv_obj_set_style_image_recolor_opa(logo_[i], LV_OPA_COVER, 0);
+      lv_obj_remove_flag(logo_[i], LV_OBJ_FLAG_CLICKABLE);
+      label_[i] = ui::label(block_[i], Font::BODY, theme::MUTED);
       lv_obj_set_style_text_align(label_[i], LV_TEXT_ALIGN_CENTER, 0);
     }
     note_ = ui::label(c.parent, Font::BODY, theme::MUTED);
     lv_obj_set_width(note_, width_);
     lv_obj_set_style_text_align(note_, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_pos(note_, 0, (height_ - ui::line_height(Font::BODY)) / 2);
-    dark_ = is_dark();
     layout();
   }
 
@@ -96,10 +124,7 @@ class KeysTile : public tessera::Tile {
     }
   }
 
-  void on_theme() override {
-    dark_ = is_dark();
-    paint();
-  }
+  void on_theme() override { paint(); }
 
   void on_tap() override {
     if (count_ == 0 || entity_.empty()) return;
@@ -142,9 +167,6 @@ class KeysTile : public tessera::Tile {
     snprintf(k.logo, sizeof(k.logo), "%s", logo.c_str());
   }
 
-  // The look is dark when the card is: the logos come in a light and a dark colour.
-  bool is_dark() const { return lv_color_brightness(ui::color(theme::CARD)) < 128; }
-
   // The key that shows as chosen: the one just tapped, else the select's option.
   int active() const {
     if (pending_ >= 0) return pending_;
@@ -163,7 +185,7 @@ class KeysTile : public tessera::Tile {
     const int side = std::max(0, std::min(kw - 2 * pad, height_ - lh - 3 * pad));
     for (int i = 0; i < MAX_KEYS; ++i) {
       const bool shown = i < count_;
-      for (lv_obj_t *o : {block_[i], place_[i], label_[i]}) {
+      for (lv_obj_t *o : {block_[i]}) {
         if (!o) continue;
         if (shown) lv_obj_remove_flag(o, LV_OBJ_FLAG_HIDDEN);
         else lv_obj_add_flag(o, LV_OBJ_FLAG_HIDDEN);
@@ -172,14 +194,42 @@ class KeysTile : public tessera::Tile {
       const int x = i * (kw + gap);
       lv_obj_set_pos(block_[i], x, 0);
       lv_obj_set_size(block_[i], kw, height_);
-      const int top = (height_ - side - (lh ? pad + lh : 0)) / 2;
-      if (place_[i]) {
-        lv_obj_set_pos(place_[i], x + (kw - side) / 2, top);
-        lv_obj_set_size(place_[i], side, side);
+      // A key without a logo shows its word in the middle, always.
+      const uint8_t *alpha = keys_[i].logo[0] && side > 0 ? logo_alpha(keys_[i].logo) : nullptr;
+      const bool image = alpha != nullptr;
+      const bool word = labels_ || !image;
+      const int wh = word ? ui::line_height(Font::BODY) : 0;
+      const int top = (height_ - (image ? side : 0) - (image && word ? pad : 0) - wh) / 2;
+      if (image) {
+        // The mask at the key's size, made again only when the size or the logo changed.
+        if (made_side_[i] != side || made_logo_[i] != alpha) {
+          mask_[i].assign(size_t(side) * side, 0);
+          resample(alpha, side, mask_[i].data());
+          lv_image_set_src(logo_[i], nullptr);
+          lv_image_dsc_t &d = image_[i];
+          d = lv_image_dsc_t{};
+          d.header.magic = LV_IMAGE_HEADER_MAGIC;
+          d.header.cf = LV_COLOR_FORMAT_A8;
+          d.header.w = side;
+          d.header.h = side;
+          d.header.stride = side;
+          d.data = mask_[i].data();
+          d.data_size = mask_[i].size();
+          made_side_[i] = side;
+          made_logo_[i] = alpha;
+          lv_image_set_src(logo_[i], &image_[i]);
+          lv_obj_invalidate(logo_[i]);
+        }
+        lv_obj_set_pos(logo_[i], (kw - side) / 2, top);
+        lv_obj_set_size(logo_[i], side, side);
+        lv_obj_remove_flag(logo_[i], LV_OBJ_FLAG_HIDDEN);
+      } else {
+        lv_obj_add_flag(logo_[i], LV_OBJ_FLAG_HIDDEN);
       }
-      lv_obj_set_pos(label_[i], 0, place_[i] ? top + side + pad : (height_ - lh) / 2);
+      lv_obj_set_pos(label_[i], 0, image ? top + side + pad : top);
       lv_obj_set_width(label_[i], kw);
-      if (!labels_ && place_[i]) lv_obj_add_flag(label_[i], LV_OBJ_FLAG_HIDDEN);
+      if (word) lv_obj_remove_flag(label_[i], LV_OBJ_FLAG_HIDDEN);
+      else lv_obj_add_flag(label_[i], LV_OBJ_FLAG_HIDDEN);
       ui::set_text(label_[i], keys_[i].value);
     }
     paint();
@@ -192,11 +242,7 @@ class KeysTile : public tessera::Tile {
       const bool chosen = i == on;
       ui::set_fill(block_[i], tessera::Tone::NORMAL, chosen ? theme::ACCENT : theme::TRACK);
       ui::set_color(label_[i], chosen ? theme::ON_ACCENT : theme::INK_SOFT);
-      if (place_[i]) {
-        std::string url;
-        if (keys_[i].logo[0]) url = std::string(LOGO_BASE) + keys_[i].logo + (chosen || dark_ ? "-light.png" : "-dark.png");
-        ui::set_picture(place_[i], url, tessera::Fit::CONTAIN);
-      }
+      lv_obj_set_style_image_recolor(logo_[i], ui::color(chosen ? theme::ON_ACCENT : theme::INK), 0);
     }
     // Nothing to show: say what is missing.
     std::string note;
@@ -212,10 +258,14 @@ class KeysTile : public tessera::Tile {
   lv_obj_t *parent_{};
   int width_ = 0, height_ = 0, count_ = 0, pending_ = -1;
   uint32_t pending_at_ = 0;
-  bool listed_ = false, labels_ = true, dark_ = false, has_state_ = false;
+  bool listed_ = false, labels_ = true, has_state_ = false;
   tessera::Text entity_, script_, field_, chosen_;   // PSRAM first (docs/FIRMWARE_API.md, "Memory")
   Key keys_[MAX_KEYS]{};
-  lv_obj_t *block_[MAX_KEYS]{}, *place_[MAX_KEYS]{}, *label_[MAX_KEYS]{}, *note_{};
+  tessera::List<uint8_t> mask_[MAX_KEYS];   // each logo at its key's size (PSRAM)
+  lv_image_dsc_t image_[MAX_KEYS]{};
+  int made_side_[MAX_KEYS]{};
+  const uint8_t *made_logo_[MAX_KEYS]{};
+  lv_obj_t *block_[MAX_KEYS]{}, *logo_[MAX_KEYS]{}, *label_[MAX_KEYS]{}, *note_{};
 };
 
 void SourceKeys::setup() {

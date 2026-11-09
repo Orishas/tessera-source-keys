@@ -21,12 +21,7 @@ Logos: `windows`, `apple`, `playstation`, `nintendo-switch`, `xbox`, `linux`. A 
 ## Good to know
 
 - The screen must be allowed to perform Home Assistant actions (Tessera turns it on when it adds the screen).
-- Up to six keys. On a screen that shows no pictures (the CYD, the Waveshare 3.5-inch, the Hosyond 4-inch) the keys
-  show their words only.
+- Up to six keys, on every screen: the logos are built into the plugin and take the screen's own colours (light on a
+  grey key in the dark look, dark in the light look, white on the blue key). Nothing is fetched from the internet.
 - The logos are Material Design Icons (Apache 2.0), the ones Home Assistant uses too; the brands belong to their owners.
-
-## Privacy
-
-The logos are small PNG files in this repository. Tessera's app fetches them from `raw.githubusercontent.com` and sends
-them to the screen. GitHub sees the address of your Home Assistant's internet connection and which logo was asked for;
-nothing about your home, your entities or your choices leaves Home Assistant.
+  `tools/make_logos.py` makes `components/source_keys/logos.h` from `tools/svg/`.

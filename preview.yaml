@@ -21,13 +21,3 @@ states:
   script.show_source:
     state: "off"
     attributes: { friendly_name: Show source }
-
-pictures:
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/windows-light.png": logos/windows-light.png
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/windows-dark.png": logos/windows-dark.png
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/apple-light.png": logos/apple-light.png
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/apple-dark.png": logos/apple-dark.png
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/playstation-light.png": logos/playstation-light.png
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/playstation-dark.png": logos/playstation-dark.png
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/nintendo-switch-light.png": logos/nintendo-switch-light.png
-  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/nintendo-switch-dark.png": logos/nintendo-switch-dark.png
