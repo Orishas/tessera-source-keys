@@ -1,0 +1,40 @@
+# Source keys: one row of keys for the options of a select, each with the logo of what it stands for (Windows, Apple,
+# PlayStation, Nintendo Switch, ...). A tap chooses that option, or runs a script with it as a field, so the choice can
+# wake a monitor and switch its input on the way. Every field is explained in docs/MANIFEST.md of tessera-plugins.
+id: source_keys
+version: 0.1.0
+api: "0.17"
+icon: remote-tv
+maintainer: Orishas
+license: MIT
+stage: beta
+topics: [home, media]
+requires:
+  esphome: 2026.6.2
+boards: any
+flash_kb: 6
+
+permissions:
+  # The logos are small PNGs in this plugin's own repository.
+  network: [raw.githubusercontent.com]
+  home_assistant_actions: [script.turn_on, input_select.select_option, select.select_option]
+attributes: [cloud]
+privacy: https://github.com/Orishas/tessera-source-keys#privacy
+
+tiles:
+  - id: keys
+    name: tile_name
+    icon: remote-tv
+    sizes: { min: 2x1, max: 4x2 }
+    # Up to six keys, each a block, a label and a place for its logo, plus a few members.
+    memory: 1800
+    pictures: 6
+    domains: [input_select, select]
+    attributes: [options]
+    example: tile_example
+    preview: { title: "{name}", value: "{state}" }
+    options:
+      - { id: script, kind: entity, domains: [script], label: script, hint: script_hint }
+      - { id: field, kind: text, label: field, hint: field_hint, default: quelle }
+      - { id: keys, kind: text, multiple: 6, label: keys, hint: keys_hint }
+      - { id: labels, kind: toggle, label: labels, hint: labels_hint, default: true }

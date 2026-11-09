@@ -1,0 +1,22 @@
+{
+  "_meta": { "name": "English" },
+  "screen": {
+    "choose_select": "Choose a select",
+    "no_options": "No options",
+    "waiting": "Waiting for Home Assistant"
+  },
+  "app": {
+    "name": "Source keys",
+    "summary": "A row of keys with logos for a select: PC, Mac, PlayStation, Switch. A tap switches the source.",
+    "tile_name": "Source keys",
+    "tile_example": "PC, Mac, PS5 and Switch as keys",
+    "script": "Script",
+    "script_hint": "Optional. A tap runs this script with the option as a field instead of choosing the option itself, so it can wake the monitor and switch the input.",
+    "field": "Field",
+    "field_hint": "The script's field that gets the option, such as quelle or source.",
+    "keys": "Keys",
+    "keys_hint": "Optional. One key per line as Option|logo, such as PC|windows. Logos: windows, apple, playstation, nintendo-switch, xbox, linux. Empty: every option of the select, with a logo guessed from its name.",
+    "labels": "Words under the logos",
+    "labels_hint": "The option's name under each logo."
+  }
+}

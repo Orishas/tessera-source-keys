@@ -1,0 +1,22 @@
+{
+  "_meta": { "name": "Deutsch" },
+  "screen": {
+    "choose_select": "Auswahl wählen",
+    "no_options": "Keine Optionen",
+    "waiting": "Warte auf Home Assistant"
+  },
+  "app": {
+    "name": "Quellen-Tasten",
+    "summary": "Eine Reihe Tasten mit Logos für eine Auswahl: PC, Mac, PlayStation, Switch. Ein Tipp schaltet die Quelle.",
+    "tile_name": "Quellen-Tasten",
+    "tile_example": "PC, Mac, PS5 und Switch als Tasten",
+    "script": "Skript",
+    "script_hint": "Optional. Ein Tipp startet dieses Skript mit der Option als Feld, statt die Option direkt zu wählen, damit es den Monitor wecken und den Eingang schalten kann.",
+    "field": "Feld",
+    "field_hint": "Das Feld des Skripts, das die Option bekommt, etwa quelle oder source.",
+    "keys": "Tasten",
+    "keys_hint": "Optional. Eine Taste pro Zeile als Option|Logo, etwa PC|windows. Logos: windows, apple, playstation, nintendo-switch, xbox, linux. Leer: alle Optionen der Auswahl, Logo nach dem Namen geraten.",
+    "labels": "Wörter unter den Logos",
+    "labels_hint": "Der Name der Option unter jedem Logo."
+  }
+}

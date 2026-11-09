@@ -1,0 +1,33 @@
+# What tools/preview.py shows (docs/PREVIEW.md of tessera-plugins): the keys of a monitor's sources, chosen and not.
+tiles:
+  - tile: keys
+    name: Source
+    entity: input_select.monitor_source
+    options: { script: script.show_source, field: quelle }
+    sizes: [2x1, 2x2]
+  - tile: keys
+    name: Listed keys
+    entity: input_select.monitor_source
+    options: { keys: ["PC|windows", "Mac|apple", "PS5|playstation"], labels: false }
+    sizes: [2x1]
+  - tile: keys
+    name: No select yet
+    sizes: [2x1]
+
+states:
+  input_select.monitor_source:
+    state: Mac
+    attributes: { friendly_name: Monitor source, options: [PC, Mac, PS5, Switch 2] }
+  script.show_source:
+    state: "off"
+    attributes: { friendly_name: Show source }
+
+pictures:
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/windows-light.png": logos/windows-light.png
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/windows-dark.png": logos/windows-dark.png
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/apple-light.png": logos/apple-light.png
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/apple-dark.png": logos/apple-dark.png
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/playstation-light.png": logos/playstation-light.png
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/playstation-dark.png": logos/playstation-dark.png
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/nintendo-switch-light.png": logos/nintendo-switch-light.png
+  "https://raw.githubusercontent.com/Orishas/tessera-source-keys/main/logos/nintendo-switch-dark.png": logos/nintendo-switch-dark.png
