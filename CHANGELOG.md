@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.5.0 - 2026-11-09
+- New: **Monitor's keys** small, medium or large. A larger row takes the large icon and larger words.
+
 ## 0.4.0 - 2026-11-09
 - The monitor's head line is off unless **Head line** is turned on, so the logos get the room.
 - New: **Words on the monitor's keys**. Off shows only the icons.

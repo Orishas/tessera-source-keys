@@ -2,7 +2,7 @@
 # PlayStation, Nintendo Switch, ...). A tap chooses that option, or runs a script with it as a field, so the choice can
 # wake a monitor and switch its input on the way. Every field is explained in docs/MANIFEST.md of tessera-plugins.
 id: source_keys
-version: 0.4.0
+version: 0.5.0
 api: "0.17"
 icon: remote-tv
 maintainer: Orishas
@@ -37,3 +37,5 @@ tiles:
       - { id: power, kind: entity, domains: [switch], label: power, hint: power_hint }
       - { id: head, kind: toggle, label: head, hint: head_hint, default: false }
       - { id: row_words, kind: toggle, label: row_words, hint: row_words_hint, default: true }
+      - { id: row_size, kind: choice, label: row_size, hint: row_size_hint, default: small,
+          choices: [{ value: small, label: row_small }, { value: medium, label: row_medium }, { value: large, label: row_large }] }

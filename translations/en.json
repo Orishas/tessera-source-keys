@@ -35,6 +35,11 @@
     "head": "Head line",
     "head_hint": "The monitor's name and state over the keys.",
     "row_words": "Words on the monitor's keys",
-    "row_words_hint": "Off: only the icons, larger."
+    "row_words_hint": "Off: only the icons, larger.",
+    "row_size": "Monitor's keys",
+    "row_size_hint": "How much of the tile the monitor's keys take; the rest is for the sources.",
+    "row_small": "Small",
+    "row_medium": "Medium",
+    "row_large": "Large"
   }
 }

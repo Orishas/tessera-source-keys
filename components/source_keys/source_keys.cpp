@@ -89,6 +89,9 @@ class KeysTile : public tessera::Tile {
     monitor_ = c.rows >= 2 && (!picture_.empty() || !power_.empty());
     head_on_ = c.options["head"] | false;
     row_words_ = c.options["row_words"] | true;
+    // How much of the tile's height the monitor's row takes: small, medium or large.
+    const std::string size = c.options["row_size"] | "small";
+    row_pct_ = size == "large" ? 48 : size == "medium" ? 38 : 27;
     // The keys the person listed, as "Value|logo" or "Value"; empty: the select's own options, read in on_state.
     for (JsonVariantConst v : c.options["keys"].as<JsonArrayConst>()) {
       if (count_ >= MAX_KEYS) break;
@@ -219,7 +222,7 @@ class KeysTile : public tessera::Tile {
     const int gap = ui::px(8);
     if (monitor_) {
       const int head = head_on_ ? ui::line_height(Font::BODY) + gap : 0;
-      row_h_ = std::max(ui::line_height(Font::BODY) * 3 / 2, height_ * 27 / 100);
+      row_h_ = std::max(ui::line_height(Font::BODY) * 3 / 2, height_ * row_pct_ / 100);
       keys_y_ = head;
       keys_h_ = std::max(0, height_ - keys_y_ - gap - row_h_);
       row_y_ = height_ - row_h_;
@@ -354,7 +357,13 @@ class KeysTile : public tessera::Tile {
       ui::set_color(micon_[k], accent ? theme::ON_ACCENT : theme::INK);
       ui::set_color(mlabel_[k], accent ? theme::ON_ACCENT : theme::INK_SOFT);
       // The icon and the word together in the middle of the key.
-      const int iw = ui::line_height(Font::ICON_SMALL), space = ui::px(8);
+      // A tall row takes the large icon and the larger words.
+      const bool roomy_row = row_h_ >= ui::line_height(Font::ICON) + 2 * gap;
+      const Font ifont = roomy_row ? Font::ICON : Font::ICON_SMALL;
+      const Font tfont = roomy_row ? Font::BODY_LARGE : Font::BODY;
+      ui::set_font(micon_[k], ifont);
+      ui::set_font(mlabel_[k], tfont);
+      const int iw = ui::line_height(ifont), space = ui::px(roomy_row ? 12 : 8);
       if (!row_words_) {
         // Only the icon, large, in the middle of the key.
         ui::set_font(micon_[k], Font::ICON);
@@ -363,10 +372,11 @@ class KeysTile : public tessera::Tile {
         lv_obj_set_pos(micon_[k], (kw - big) / 2, (row_h_ - big) / 2);
         continue;
       }
-      const int tw = std::min(kw - iw - space - 2 * gap, ui::text_width(word, Font::BODY));
+      lv_obj_remove_flag(mlabel_[k], LV_OBJ_FLAG_HIDDEN);
+      const int tw = std::min(kw - iw - space - 2 * gap, ui::text_width(word, tfont));
       const int x0 = std::max(0, (kw - iw - space - tw) / 2);
-      lv_obj_set_pos(micon_[k], x0, (row_h_ - ui::line_height(Font::ICON_SMALL)) / 2);
-      lv_obj_set_pos(mlabel_[k], x0 + iw + space, (row_h_ - ui::line_height(Font::BODY)) / 2);
+      lv_obj_set_pos(micon_[k], x0, (row_h_ - ui::line_height(ifont)) / 2);
+      lv_obj_set_pos(mlabel_[k], x0 + iw + space, (row_h_ - ui::line_height(tfont)) / 2);
       lv_obj_set_width(mlabel_[k], std::max(1, tw));
     }
   }
@@ -377,7 +387,7 @@ class KeysTile : public tessera::Tile {
   uint32_t pending_at_ = 0;
   bool listed_ = false, labels_ = true, has_state_ = false;
   bool monitor_ = false, picture_on_ = false, power_on_ = true, head_on_ = false, row_words_ = true;
-  int keys_y_ = 0, keys_h_ = 0, row_y_ = 0, row_h_ = 0;
+  int keys_y_ = 0, keys_h_ = 0, row_y_ = 0, row_h_ = 0, row_pct_ = 27;
   tessera::Text name_, picture_, power_;
   lv_obj_t *head_{}, *status_{}, *mblock_[2]{}, *micon_[2]{}, *mlabel_[2]{};
   tessera::Text entity_, script_, field_, chosen_;   // PSRAM first (docs/FIRMWARE_API.md, "Memory")

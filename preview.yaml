@@ -1,14 +1,19 @@
 # What tools/preview.py shows (docs/PREVIEW.md of tessera-plugins): the keys of a monitor's sources, chosen and not.
 tiles:
   - tile: keys
-    name: Monitor
+    name: A medium
     entity: input_select.monitor_source
-    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false }
+    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: true, row_size: medium }
     sizes: [2x2]
   - tile: keys
-    name: Icons only
+    name: B large
     entity: input_select.monitor_source
-    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false, row_words: false }
+    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false, row_size: large }
+    sizes: [2x2]
+  - tile: keys
+    name: C medium no words
+    entity: input_select.monitor_source
+    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false, row_size: medium }
     sizes: [2x2]
   - tile: keys
     name: Source

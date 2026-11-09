@@ -35,6 +35,11 @@
     "head": "Kopfzeile",
     "head_hint": "Name und Zustand des Monitors über den Tasten.",
     "row_words": "Wörter auf den Monitor-Tasten",
-    "row_words_hint": "Aus: nur die Icons, größer."
+    "row_words_hint": "Aus: nur die Icons, größer.",
+    "row_size": "Monitor-Tasten",
+    "row_size_hint": "Wie viel der Kachel die Monitor-Tasten bekommen; der Rest gehört den Quellen.",
+    "row_small": "Klein",
+    "row_medium": "Mittel",
+    "row_large": "Groß"
   }
 }
