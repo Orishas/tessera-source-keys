@@ -1,14 +1,15 @@
 # What tools/preview.py shows (docs/PREVIEW.md of tessera-plugins): the keys of a monitor's sources, chosen and not.
 tiles:
   - tile: keys
+    name: B large
+    entity: input_select.monitor_source
+    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false, row_size: large,
+               auto_1: input_boolean.pc_auto, auto_2: input_boolean.mac_auto, auto_3: input_boolean.ps5_auto }
+    sizes: [2x2]
+  - tile: keys
     name: A medium
     entity: input_select.monitor_source
     options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: true, row_size: medium }
-    sizes: [2x2]
-  - tile: keys
-    name: B large
-    entity: input_select.monitor_source
-    options: { script: script.show_source, field: quelle, picture: switch.monitor_picture, power: switch.monitor_power, labels: false, row_size: large }
     sizes: [2x2]
   - tile: keys
     name: C medium no words
@@ -42,3 +43,12 @@ states:
   switch.monitor_power:
     state: "on"
     attributes: { friendly_name: Power }
+  input_boolean.pc_auto:
+    state: "on"
+    attributes: { friendly_name: PC auto }
+  input_boolean.mac_auto:
+    state: "on"
+    attributes: { friendly_name: Mac auto }
+  input_boolean.ps5_auto:
+    state: "off"
+    attributes: { friendly_name: PS5 auto }

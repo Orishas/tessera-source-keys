@@ -13,7 +13,10 @@ field, so the script can wake a monitor and switch its input on the way.
    `input_select.buro_monitor_quelle`).
 5. Optional: choose a **Script** and its **Field** (such as `script.buro_quelle_anzeigen` and `quelle`). A tap then runs
    the script with the option, instead of choosing the option directly.
-6. Optional: list the **Keys** yourself as `Option|logo`, one per line. Without, every option of the select gets a key
+6. Optional, on a tile two rows high: choose a **Picture switch** and a **Power switch** for the monitor's keys under
+   the sources, and for each source a switch under **Auto of the 1st key**, **2nd** and **3rd** (in the order of the
+   keys). While a source with one is chosen, an **Auto** key beside the monitor's keys turns it on and off.
+7. Optional: list the **Keys** yourself as `Option|logo`, one per line. Without, every option of the select gets a key
    and a logo guessed from its name.
 
 Logos: `windows`, `apple`, `playstation`, `nintendo-switch`, `xbox`, `linux`. A key without a logo shows its word only.

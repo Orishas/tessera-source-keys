@@ -13,7 +13,8 @@
     "picture_off": "Bild aus",
     "picture_on": "Bild an",
     "turn_off": "Aus",
-    "turn_on": "Einschalten"
+    "turn_on": "Einschalten",
+    "auto": "Auto"
   },
   "app": {
     "name": "Quellen-Tasten",
@@ -40,6 +41,10 @@
     "row_size_hint": "Wie viel der Kachel die Monitor-Tasten bekommen; der Rest gehört den Quellen.",
     "row_small": "Klein",
     "row_medium": "Mittel",
-    "row_large": "Groß"
+    "row_large": "Groß",
+    "auto_1": "Auto der 1. Taste",
+    "auto_2": "Auto der 2. Taste",
+    "auto_3": "Auto der 3. Taste",
+    "auto_hint": "Optional, mit den Monitor-Tasten. Ein Schalter oder Input-Boolean, der sagt, ob diese Quelle den Monitor von selbst einschaltet. Solange ihre Taste gewählt ist, schaltet eine Auto-Taste neben den Monitor-Tasten ihn ein und aus."
   }
 }

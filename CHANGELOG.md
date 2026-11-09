@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.6.0 - 2026-11-09
+- New: an **Auto** key beside the monitor's keys, for the source chosen now. Choose a switch for each source
+  under **Auto of the 1st key** and the next ones (the order of the keys); its key turns that source's automatic
+  start of the monitor on and off.
+
 ## 0.5.0 - 2026-11-09
 - New: **Monitor's keys** small, medium or large. A larger row takes the large icon and larger words.
 

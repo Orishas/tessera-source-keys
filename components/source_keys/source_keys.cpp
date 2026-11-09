@@ -19,6 +19,9 @@ static constexpr uint32_t PENDING_MS = 15000;
 static constexpr uint32_t ICON_EYE = 0xF0208;
 static constexpr uint32_t ICON_TV_OFF = 0xF083B;
 static constexpr uint32_t ICON_POWER = 0xF0425;
+static constexpr uint32_t ICON_AUTO = 0xF18F2;
+// Keys with a switch of their own that says whether it turns the monitor on by itself (auto_1 ... auto_3).
+static constexpr int MAX_AUTOS = 3;
 
 // The logo a word stands for, when the person gave none: "PC" is Windows, "Mac" Apple, and so on.
 static std::string guess_logo(const std::string &label) {
@@ -87,6 +90,11 @@ class KeysTile : public tessera::Tile {
     // The monitor's row: a head line with its state, and keys for the picture and the power under the sources.
     // Only on a tile two rows high, and only when a switch for one of them is chosen.
     monitor_ = c.rows >= 2 && (!picture_.empty() || !power_.empty());
+    for (int i = 0; i < MAX_AUTOS; ++i) {
+      char id[8];
+      snprintf(id, sizeof(id), "auto_%d", i + 1);
+      auto_[i] = roomy::text(std::string(c.options[id] | ""));
+    }
     head_on_ = c.options["head"] | false;
     row_words_ = c.options["row_words"] | true;
     // How much of the tile's height the monitor's row takes: small, medium or large.
@@ -114,7 +122,7 @@ class KeysTile : public tessera::Tile {
       head_ = ui::label(c.parent, Font::BODY, theme::INK_SOFT);
       status_ = ui::label(c.parent, Font::BODY, theme::MUTED);
       lv_obj_set_style_text_align(status_, LV_TEXT_ALIGN_RIGHT, 0);
-      for (int k = 0; k < 2; ++k) {
+      for (int k = 0; k < 3; ++k) {
         mblock_[k] = ui::block(c.parent, theme::TRACK);
         lv_obj_set_style_pad_all(mblock_[k], 0, 0);
         lv_obj_remove_flag(mblock_[k], LV_OBJ_FLAG_SCROLLABLE);
@@ -141,6 +149,11 @@ class KeysTile : public tessera::Tile {
     }
     picture_on_ = std::string(data["entities"]["picture"]["state"] | "") == "on";
     power_on_ = power_.empty() ? true : std::string(data["entities"]["power"]["state"] | "") == "on";
+    for (int i = 0; i < MAX_AUTOS; ++i) {
+      char id[8];
+      snprintf(id, sizeof(id), "auto_%d", i + 1);
+      auto_on_[i] = std::string(data["entities"][id]["state"] | "") == "on";
+    }
     // Home Assistant has the tapped option now, or it never will: the key follows the select again.
     if (pending_ >= 0 && chosen_ == keys_[pending_].value) pending_ = -1;
     layout();
@@ -185,12 +198,43 @@ class KeysTile : public tessera::Tile {
   // The monitor's row: one key that turns it on while it is off, else the picture's key and the power's key.
   bool single_power() const { return !power_.empty() && !power_on_; }
 
+  // The keys of the monitor's row, left to right: 0 the picture's, 1 the power's, 2 the chosen source's Auto.
+  int row_keys(int *kinds) const {
+    int n = 0;
+    if (single_power()) kinds[n++] = 1;
+    else {
+      if (!picture_.empty()) kinds[n++] = 0;
+      if (!power_.empty()) kinds[n++] = 1;
+    }
+    if (auto_index() >= 0) kinds[n++] = 2;
+    return n;
+  }
+
+  // The Auto switch of the source chosen now, by its key's place: auto_1 for the first key, and so on. -1: none.
+  int auto_index() const {
+    const int i = active();
+    return i >= 0 && i < MAX_AUTOS && !auto_[i].empty() ? i : -1;
+  }
+
   void tap_monitor(int x) {
-    const bool left = !single_power() && !picture_.empty() && (power_.empty() || x < width_ / 2);
-    if (left) {
+    int kinds[3];
+    const int n = row_keys(kinds);
+    if (n == 0) return;
+    const int kind = kinds[std::min(n - 1, std::max(0, x * n / std::max(1, width_)))];
+    if (kind == 0) {
       tessera::action(picture_on_ ? "switch.turn_off" : "switch.turn_on", roomy::plain(picture_));
-    } else if (!power_.empty()) {
+    } else if (kind == 1) {
       tessera::action(power_on_ ? "switch.turn_off" : "switch.turn_on", roomy::plain(power_));
+    } else {
+      const int i = auto_index();
+      const std::string entity = roomy::plain(auto_[i]);
+      const bool boolean = entity.rfind("input_boolean.", 0) == 0;
+      const char *service = auto_on_[i] ? (boolean ? "input_boolean.turn_off" : "switch.turn_off")
+                                        : (boolean ? "input_boolean.turn_on" : "switch.turn_on");
+      if (tessera::action(service, entity)) {
+        auto_on_[i] = !auto_on_[i];   // Home Assistant confirms with the next on_state
+        paint();
+      }
     }
   }
 
@@ -327,17 +371,28 @@ class KeysTile : public tessera::Tile {
     else if (!chosen_.empty()) status += " · " + roomy::plain(chosen_);
     ui::set_text(status_, status);
     const int gap = ui::px(8);
-    const bool one = single_power() || picture_.empty() || power_.empty();
-    const int kw = one ? width_ : (width_ - gap) / 2;
-    for (int k = 0; k < 2; ++k) {
-      // Key 0 is the picture's, key 1 the power's; a row of one key shows the one that matters now.
-      bool shown = !one || (k == 1 ? (!power_.empty() && (single_power() || picture_.empty())) : (!picture_.empty() && power_.empty()));
-      if (!shown) {
-        lv_obj_add_flag(mblock_[k], LV_OBJ_FLAG_HIDDEN);
-        continue;
-      }
+    int kinds[3];
+    const int n = row_keys(kinds);
+    const int kw = n > 0 ? (width_ - gap * (n - 1)) / n : width_;
+    bool used[3] = {false, false, false};
+    // The icon beside the word while every key's word fits so, else the icon over the word on every key (a row of
+    // three on a small screen), so the keys look alike.
+    const bool roomy_row = row_h_ >= ui::line_height(Font::ICON) + 2 * gap;
+    const Font ifont = roomy_row ? Font::ICON : Font::ICON_SMALL;
+    const Font wide_font = roomy_row ? Font::BODY_LARGE : Font::BODY;
+    const int iw = ui::line_height(ifont), space = ui::px(roomy_row ? 12 : 8);
+    bool beside = true;
+    for (int j = 0; j < n; ++j) {
+      const int k = kinds[j];
+      const char *key = k == 0 ? (picture_on_ ? "picture_off" : "picture_on")
+                      : k == 1 ? (power_on_ ? "turn_off" : "turn_on") : "auto";
+      if (iw + space + ui::text_width(plugin_->text(key), wide_font) > kw - 2 * gap) beside = false;
+    }
+    for (int j = 0; j < n; ++j) {
+      const int k = kinds[j];
+      used[k] = true;
       lv_obj_remove_flag(mblock_[k], LV_OBJ_FLAG_HIDDEN);
-      lv_obj_set_pos(mblock_[k], one ? 0 : k * (kw + gap), row_y_);
+      lv_obj_set_pos(mblock_[k], j * (kw + gap), row_y_);
       lv_obj_set_size(mblock_[k], kw, row_h_);
       uint32_t icon;
       std::string word;
@@ -346,24 +401,21 @@ class KeysTile : public tessera::Tile {
         icon = picture_on_ ? ICON_TV_OFF : ICON_EYE;
         word = plugin_->text(picture_on_ ? "picture_off" : "picture_on");
         accent = !picture_on_;
-      } else {
+      } else if (k == 1) {
         icon = ICON_POWER;
         word = plugin_->text(power_on_ ? "turn_off" : "turn_on");
         accent = !power_on_;
+      } else {
+        icon = ICON_AUTO;
+        word = plugin_->text("auto");
+        accent = auto_on_[auto_index()];
       }
       ui::set_fill(mblock_[k], tessera::Tone::NORMAL, accent ? theme::ACCENT : theme::TRACK);
       ui::set_text(micon_[k], ui::icon(icon));
       ui::set_text(mlabel_[k], word);
       ui::set_color(micon_[k], accent ? theme::ON_ACCENT : theme::INK);
       ui::set_color(mlabel_[k], accent ? theme::ON_ACCENT : theme::INK_SOFT);
-      // The icon and the word together in the middle of the key.
-      // A tall row takes the large icon and the larger words.
-      const bool roomy_row = row_h_ >= ui::line_height(Font::ICON) + 2 * gap;
-      const Font ifont = roomy_row ? Font::ICON : Font::ICON_SMALL;
-      const Font tfont = roomy_row ? Font::BODY_LARGE : Font::BODY;
-      ui::set_font(micon_[k], ifont);
-      ui::set_font(mlabel_[k], tfont);
-      const int iw = ui::line_height(ifont), space = ui::px(roomy_row ? 12 : 8);
+      Font tfont = wide_font;
       if (!row_words_) {
         // Only the icon, large, in the middle of the key.
         ui::set_font(micon_[k], Font::ICON);
@@ -373,12 +425,30 @@ class KeysTile : public tessera::Tile {
         continue;
       }
       lv_obj_remove_flag(mlabel_[k], LV_OBJ_FLAG_HIDDEN);
-      const int tw = std::min(kw - iw - space - 2 * gap, ui::text_width(word, tfont));
-      const int x0 = std::max(0, (kw - iw - space - tw) / 2);
-      lv_obj_set_pos(micon_[k], x0, (row_h_ - ui::line_height(ifont)) / 2);
-      lv_obj_set_pos(mlabel_[k], x0 + iw + space, (row_h_ - ui::line_height(tfont)) / 2);
-      lv_obj_set_width(mlabel_[k], std::max(1, tw));
+      ui::set_font(micon_[k], ifont);
+      if (beside) {
+        ui::set_font(mlabel_[k], tfont);
+        const int tw = ui::text_width(word, tfont);
+        const int x0 = std::max(0, (kw - iw - space - tw) / 2);
+        lv_obj_set_pos(micon_[k], x0, (row_h_ - ui::line_height(ifont)) / 2);
+        lv_obj_set_pos(mlabel_[k], x0 + iw + space, (row_h_ - ui::line_height(tfont)) / 2);
+        lv_obj_set_width(mlabel_[k], std::max(1, tw));
+      } else {
+        tfont = Font::BODY;
+        ui::set_font(mlabel_[k], tfont);
+        const Font sfont = row_h_ >= ui::line_height(Font::ICON) + ui::line_height(tfont) + 2 * gap ? Font::ICON
+                                                                                                     : Font::ICON_SMALL;
+        ui::set_font(micon_[k], sfont);
+        const int ih = ui::line_height(sfont), th = ui::line_height(tfont);
+        const int y0 = std::max(0, (row_h_ - ih - th) / 2);
+        lv_obj_set_pos(micon_[k], (kw - ih) / 2, y0);
+        lv_obj_set_pos(mlabel_[k], gap, y0 + ih);
+        lv_obj_set_width(mlabel_[k], std::max(1, kw - 2 * gap));
+        lv_obj_set_style_text_align(mlabel_[k], LV_TEXT_ALIGN_CENTER, 0);
+      }
     }
+    for (int k = 0; k < 3; ++k)
+      if (!used[k]) lv_obj_add_flag(mblock_[k], LV_OBJ_FLAG_HIDDEN);
   }
 
   const tessera::Plugin *plugin_;
@@ -389,7 +459,9 @@ class KeysTile : public tessera::Tile {
   bool monitor_ = false, picture_on_ = false, power_on_ = true, head_on_ = false, row_words_ = true;
   int keys_y_ = 0, keys_h_ = 0, row_y_ = 0, row_h_ = 0, row_pct_ = 27;
   tessera::Text name_, picture_, power_;
-  lv_obj_t *head_{}, *status_{}, *mblock_[2]{}, *micon_[2]{}, *mlabel_[2]{};
+  lv_obj_t *head_{}, *status_{}, *mblock_[3]{}, *micon_[3]{}, *mlabel_[3]{};
+  tessera::Text auto_[MAX_AUTOS];
+  bool auto_on_[MAX_AUTOS]{};
   tessera::Text entity_, script_, field_, chosen_;   // PSRAM first (docs/FIRMWARE_API.md, "Memory")
   Key keys_[MAX_KEYS]{};
   tessera::List<uint8_t> mask_[MAX_KEYS];   // each logo at its key's size (PSRAM)
