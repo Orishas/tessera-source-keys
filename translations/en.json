@@ -45,6 +45,8 @@
     "auto_1": "Auto of the 1st key",
     "auto_2": "Auto of the 2nd key",
     "auto_3": "Auto of the 3rd key",
-    "auto_hint": "Optional, with the monitor's keys. A switch or input boolean that says whether this source turns the monitor on by itself. While its key is chosen, an Auto key beside the monitor's keys turns it on and off."
+    "auto_hint": "Optional, with the monitor's keys. A switch or input boolean that says whether this source turns the monitor on by itself. While its key is chosen, an Auto key beside the monitor's keys turns it on and off.",
+    "group_monitor": "The monitor's keys",
+    "group_auto": "Auto"
   }
 }

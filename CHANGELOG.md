@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.0 - 2026-11-17
+- The inspector is shorter: the monitor's keys (picture, power, head line, words, size) and the Auto switches stand
+  in two sections, folded until one of them has a value.
+- Needs Tessera 0.4.98 or later (plugin API 0.26).
+
 ## 0.6.0 - 2026-11-09
 - New: an **Auto** key beside the monitor's keys, for the source chosen now. Choose a switch for each source
   under **Auto of the 1st key** and the next ones (the order of the keys); its key turns that source's automatic
