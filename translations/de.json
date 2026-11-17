@@ -45,6 +45,8 @@
     "auto_1": "Auto der 1. Taste",
     "auto_2": "Auto der 2. Taste",
     "auto_3": "Auto der 3. Taste",
-    "auto_hint": "Optional, mit den Monitor-Tasten. Ein Schalter oder Input-Boolean, der sagt, ob diese Quelle den Monitor von selbst einschaltet. Solange ihre Taste gewählt ist, schaltet eine Auto-Taste neben den Monitor-Tasten ihn ein und aus."
+    "auto_hint": "Optional, mit den Monitor-Tasten. Ein Schalter oder Input-Boolean, der sagt, ob diese Quelle den Monitor von selbst einschaltet. Solange ihre Taste gewählt ist, schaltet eine Auto-Taste neben den Monitor-Tasten ihn ein und aus.",
+    "group_monitor": "Tasten des Monitors",
+    "group_auto": "Auto"
   }
 }
